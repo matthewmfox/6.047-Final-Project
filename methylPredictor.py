@@ -2,46 +2,73 @@ import numpy as np
 import math
 import csv
 
-x = []
-y = []
-with open('data.csv', 'rU') as csvfile:
+xList = []
+yList = []
+
+# Moves all test data into local variables.  XList holds all test values in list form, YList holds ages in list form
+start = False
+with open('dataset1.csv', 'rU') as csvfile:
     inFile = csv.reader(csvfile)
     for row in inFile:
-	x.append(int(row[0]))
-	y.append(int(row[1])) 
+	if row[0] == 'Age':
+	    yList.append(row[1:10])
+	    break
+	if start:
+	    xList.append(row[1:10])
+	start = True
+
+# Preparation for calculating all coefficients for separate predictors
+coeffs = []
+y = [float(item) for item in yList[0]]
+
+# Looping through each separate data set and calculating coefficients for it's predictor
+for j in xrange(len(xList)):
+    x = [float(item) for item in xList[j]]
+
+    value = 0
+    mini = -1
+    for i in range(1,4):
+        if np.sum((np.polyval(np.polyfit(x, y, i), x) - y)**2) < (mini/2) or mini == -1:
+            value = i
+    	mini = np.sum((np.polyval(np.polyfit(x, y, i), x) - y)**2)
+    coeffs.append(np.polyfit(x,y,value))
 
 
-value = 0
-mini = -1
-for i in xrange(4):
-    if np.sum((np.polyval(np.polyfit(x, y, i), x) - y)**2) < (mini/10) or mini == -1:
-        value = i
-	mini = np.sum((np.polyval(np.polyfit(x, y, i), x) - y)**2)
+# Grabbing data for predictor
 
-coeffs = np.polyfit(x,y,value)
+predList = []
+ageList = []
+start = False
 
-pred = []
-age = []
-
-with open('pred.csv', 'rU') as predcsv:
+with open('dataset1.csv', 'rU') as predcsv:
     predFile = csv.reader(predcsv)
     for row in predFile:
-        pred.append(int(row[0]))
-	age.append(int(row[1]))
+        if row[0] == 'Age':
+	    ageList.append(row[11:])
+	    break
+	if start:
+	    predList.append(row[11:])
+	start = True 
 
-totalOff = 0
-maxOff = 0
-for j in xrange(len(pred)):
-    exp = len(coeffs) - 1
-    prediction = 0
-    for i in coeffs:
-        prediction += i*(pred[j]**exp)
-        exp -= 1
-    unsignedOff = abs(age[j] - prediction)
-    totalOff += unsignedOff
-    if unsignedOff > maxOff:
-        maxOff = unsignedOff
+age = [float(item) for item in ageList[0]]
+
+for k in xrange(len(predList)):
+
+    pred = [float(item) for item in predList[k]]
+
+    totalOff = 0
+    maxOff = 0
+    for j in xrange(len(pred)):
+        exp = len(coeffs[k]) - 1
+        prediction = 0
+        for i in coeffs[k]:
+            prediction += i*(pred[j]**exp)
+            exp -= 1
+        unsignedOff = abs(age[j] - prediction)
+        totalOff += unsignedOff
+        if unsignedOff > maxOff:
+            maxOff = unsignedOff
+        
     
-
-print("Average error = " + str(totalOff/len(pred)))
-print("Maximum error = " + str(maxOff))
+    print("Average error = " + str(totalOff/len(pred)))
+    print("Maximum error = " + str(maxOff))
