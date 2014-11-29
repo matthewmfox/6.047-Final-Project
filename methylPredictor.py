@@ -11,10 +11,10 @@ with open('dataset1.csv', 'rU') as csvfile:
     inFile = csv.reader(csvfile)
     for row in inFile:
 	if row[0] == 'Age':
-	    yList.append(row[1:10])
+	    yList.append(row[1:12])
 	    break
 	if start:
-	    xList.append(row[1:10])
+	    xList.append(row[1:12])
 	start = True
 
 # Preparation for calculating all coefficients for separate predictors
@@ -44,13 +44,18 @@ with open('dataset1.csv', 'rU') as predcsv:
     predFile = csv.reader(predcsv)
     for row in predFile:
         if row[0] == 'Age':
-	    ageList.append(row[11:])
+	    ageList.append(row[13:])
 	    break
 	if start:
-	    predList.append(row[11:])
+	    predList.append(row[13:])
 	start = True 
 
 age = [float(item) for item in ageList[0]]
+
+predAge = []
+
+for m in xrange(4):
+    predAge.append([])
 
 for k in xrange(len(predList)):
 
@@ -64,11 +69,16 @@ for k in xrange(len(predList)):
         for i in coeffs[k]:
             prediction += i*(pred[j]**exp)
             exp -= 1
+	predAge[j].append(int(prediction))
         unsignedOff = abs(age[j] - prediction)
         totalOff += unsignedOff
         if unsignedOff > maxOff:
             maxOff = unsignedOff
         
     
-    print("Average error = " + str(totalOff/len(pred)))
-    print("Maximum error = " + str(maxOff))
+    #print("Average error = " + str(totalOff/len(pred)))
+    #print("Maximum error = " + str(maxOff))
+
+
+predAge = [sum(item)/len(item) for item in predAge]
+print predAge
