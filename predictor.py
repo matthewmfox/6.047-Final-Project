@@ -1,9 +1,13 @@
 import numpy as np
 import math
 import csv
+from scipy import stats
 
-x = []
-y = []
+x = [] # Telomere Lengths for training set
+y = [] # Ages for training set
+coeffs = []
+
+
 with open('data.csv', 'rU') as csvfile:
     inFile = csv.reader(csvfile)
     for row in inFile:
@@ -11,17 +15,12 @@ with open('data.csv', 'rU') as csvfile:
 	y.append(int(row[1])) 
 
 
-value = 0
-mini = -1
-for i in xrange(4):
-    if np.sum((np.polyval(np.polyfit(x, y, i), x) - y)**2) < (mini/10) or mini == -1:
-        value = i
-	mini = np.sum((np.polyval(np.polyfit(x, y, i), x) - y)**2)
+slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
 
-coeffs = np.polyfit(x,y,value)
+coeffs.append([slope, intercept])
 
-pred = []
-age = []
+pred = [] # Telomere length for prediction set
+age = [] # Correct ages for prediciton set 
 
 with open('pred.csv', 'rU') as predcsv:
     predFile = csv.reader(predcsv)
